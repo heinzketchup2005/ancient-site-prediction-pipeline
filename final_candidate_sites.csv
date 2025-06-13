@@ -1,0 +1,3 @@
+system:index,bio04,bio12,elevation_ee,soil_ph,.geo,dist_to_river_km,site_probability,latitude,longitude
+2_0,488.53125,1925.5469,244,44,"{""geodesic"":false,""type"":""Point"",""coordinates"":[-61.01814061836936,-10.835890642416302]}",7.5,1.0,-10.835890642416302,-61.01814061836936
+29938_0,540.7656,1906.5938,322,44,"{""geodesic"":false,""type"":""Point"",""coordinates"":[-59.58083616377813,-11.105385227652164]}",7.5,1.0,-11.105385227652164,-59.58083616377813
