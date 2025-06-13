@@ -31,7 +31,7 @@ from bs4 import BeautifulSoup
 import geopandas as gpd
 ee.Authenticate()
 
-ee.Initialize(project = 'massive-haiku-440107-q8')
+ee.Initialize(project = 'EE_PROJ_ID')
 
 def setup_ee():
     import ee
