@@ -1,7 +1,7 @@
 🗿 Discovering Hidden Archaeological Sites in the Amazon
 A solo project for the OpenAI Z-Challenge | 2025
-![Screenshot 2025-06-14 104140](https://github.com/user-attachments/assets/74520313-9e27-4079-aee9-5327c1851afb)
-![Screenshot 2025-06-14 104029](https://github.com/user-attachments/assets/ca96ab13-ae31-4396-8f20-f345c83ace97)
+
+![Screenshot 2025-06-14 005324](https://github.com/user-attachments/assets/a9fe77aa-428c-45a6-9d18-a5c999eceabf)
 
 
 🧠 Abstract
@@ -16,173 +16,180 @@ The core hypothesis behind this project is:
 
 The overall strategy involved:
 
-Collecting known site data from archaeological surveys
+📍 Collecting known site data from archaeological surveys
 
-Extracting environmental predictors (climate, elevation, soil) from Earth Engine
+📡 Extracting environmental predictors (climate, elevation, soil) from Earth Engine
 
-Engineering spatial features (distance to river, elevation) locally
+🗺️ Engineering spatial features (distance to river, elevation) locally
 
-Training a classifier using positive (known) and negative (random Amazonian) points
+🤖 Training a classifier using positive (known) and negative (random Amazonian) points
 
-Predicting likelihood scores across a 0.05° Amazonian grid
+🔮 Predicting likelihood scores across a 0.05° Amazonian grid
 
-Validating top predictions using historical textual clues interpreted via GPT-4
+📚 Validating top predictions using historical textual clues interpreted via GPT-4
 
 📁 Data Files Overview
-Here is an explanation of each major CSV/GeoJSON file used in the project and how they were created:
+Here’s an explanation of each major file and how it was created:
 
-1. features_step1.csv
+features_step1.csv
 📍 Purpose: Adds spatial features for known archaeological points.
-
 How it was made:
 
 Extracted known sites from selected KML layers:
+geoglyphs (#2), mound sites, small geoglyphs, Xingu area lidar located earthworks
 
-geoglyphs (#2), mound sites, small geoglyphs, Xingu area lidar located earthworks.
+Computed distance to river using the HydroRIVERS shapefile + BallTree nearest-neighbor search
 
-Computed distance to river using the HydroRIVERS shapefile + BallTree nearest-neighbor algorithm.
+Extracted elevation using a local dem_90m.tif with rasterio
 
-Extracted elevation values from a local dem_90m.tif using rasterio.
+🧠 Why: Terrain + proximity to rivers are strongly predictive of pre-Columbian settlements.
 
-🧠 Why:
-These spatial features capture terrain placement and access to water, which are highly predictive of pre-Columbian settlement choices.
-
-2. site_features_with_climate_fixed.csv
-📡 Purpose: Adds Earth Engine-derived environmental predictors to known sites.
-
+site_features_with_climate_fixed.csv
+📡 Purpose: Adds Earth Engine–derived climate/soil predictors
 How it was made:
 
-Used Earth Engine to sample environmental variables at site coordinates:
+Sampled Earth Engine rasters for:
 
-bio04: temperature seasonality
+bio04: Temperature Seasonality
 
-bio12: annual precipitation
+bio12: Annual Precipitation
 
-soil_ph: topsoil pH
+soil_ph: Topsoil pH
 
-elevation_ee: GEE elevation band
+elevation_ee: Elevation
 
-Exported with .geo column → parsed into latitude/longitude using Python.
+Converted .geo → lat/lon in Python
 
-🧠 Why:
-Adds ecological constraints — vegetation, soil fertility, and elevation — known to influence past Amazonian habitation patterns.
+![Screenshot 2025-06-13 233139](https://github.com/user-attachments/assets/1cbce0c3-a04d-4ff2-b80a-bdfbfcc3d05a)
 
-3. background_points_amazon.csv
-🟡 Purpose: Provides balanced negative samples for ML training.
 
+🧠 Why: Climate and soil patterns directly affect vegetation, agriculture, and human settlement viability.
+
+background_points_amazon.csv
+🟡 Purpose: Balanced negative training samples
 How it was made:
 
-Random points were generated inside the Amazon biome (excluding protected areas or known site buffers).
+Random points generated within Amazon biome
 
-Same Earth Engine export method as sites was used to sample predictors.
+Sampled Earth Engine variables same as sites
 
-Label 0 assigned to all background points.
+Assigned label 0 to denote non-sites
 
-🧠 Why:
-Provides the Random Forest with “what is not a site” — essential for building a strong classifier.
+🧠 Why: Needed for training an ML model that learns what not to classify as a site.
 
-4. prediction_grid_with_features.csv (intermediate)
-🗺️ Purpose: Scores each 0.05° grid cell in the Amazon with probability of archaeological interest.
-
+prediction_grid_with_features.csv (intermediate)
+🗺️ Purpose: Predict site likelihood across entire Amazon region
 How it was made:
 
-Created lat/lon grid using numpy over EE rectangle bounding box.
+0.05° prediction grid created using NumPy
 
-Exported EE climate and soil variables for each grid point.
+Sampled climate and soil layers via Earth Engine
 
-Estimated missing dist_to_river_km using median from training set (to avoid re-running spatial joins).
+Estimated dist_to_river_km using training set median
 
-Passed all features to predict_proba() using trained model.
+Passed all features into RandomForestClassifier.predict_proba()
 
-🧠 Why:
-This is the predictive layer — every cell gets a likelihood score, making it possible to surface top candidates.
+🧠 Why: This grid allowed visual identification of new likely site clusters.
 
-🧠 GPT-4 Interpretation
-After ML scoring, top ~50 high-confidence predictions were passed into GPT-4 using prompts inspired by colonial-era texts. Example prompt:
+🤖 GPT-4 Interpretive Layer
+After scoring ~500 grid cells using the trained model, top predictions were run through GPT-4 with historical prompts to narrow down final picks.
 
-"Read this excerpt and extract references to rivers, direction, vegetation, and distance to settlements."
-![Screenshot 2025-06-14 002143](https://github.com/user-attachments/assets/6ec0eab5-cc0d-4a72-9be2-d4d3776bf27e)
+📜 Prompt Example:
 
+“Read this excerpt and extract references to rivers, direction, vegetation, and distance to settlements.”
 
-The GPT model suggested prioritizing zones:
+![Screenshot 2025-06-14 002143](https://github.com/user-attachments/assets/fc8f19fa-d1c5-4a4d-ab99-e774448fd5aa)
 
-Near the Madeira and Purús rivers, due to rubber-era trails.
+📌 Top Recommendations:
 
-Around Guaporé and Mato Grosso, based on gold-rush expeditions.
+Madeira & Purús Rivers Zone
 
-📌 Final shortlisted coordinates reflect both:
+Historically rich rubber trails
 
-High ML probability
+Still underexplored archaeologically
 
-GPT alignment with geographic-historical clues
+Guaporé / Southern Mato Grosso Region
+
+Early bandeirante expeditions and gold mines
+
+Moderate elevation, rich soil, ≤5km to river
+
+🧠 Final sites were selected by combining:
+
+High predicted ML probability
+
+GPT-confirmed historical relevance
 
 🧪 ML Modeling Details
-Algorithm: RandomForestClassifier (200 estimators, max_depth=10)
+Model: RandomForestClassifier
 
-Features used:
+200 trees, max_depth=10
+
+Input features:
 
 dist_to_river_km
 
-elevation
+elevation, elevation_ee
 
 bio04, bio12
 
 soil_ph
 
-Evaluation: ROC AUC = 1.00 (balanced test set of 59 samples)
-
-Tools: scikit-learn, matplotlib, seaborn
+✅ ROC AUC: 1.00 on a balanced validation set
 
 📊 Visuals:
 
-Confusion matrix, ROC curve
+Confusion Matrix
 
-Feature importance plot
+ROC Curve
+
+Feature Importance Plot
+
+Libraries used: scikit-learn, seaborn, matplotlib
 
 🗺️ Visualization
-Maps were generated using both:
+Maps and terrain overlays were key for interpreting model predictions:
 
-📌 Folium for interactive zoomed-in display
+Folium for interactive exploration
 
-🖼️ Matplotlib for static site-vs-river plots and DEM overlays
+Matplotlib for static comparison (rivers, sites, terrain)
 
-Tiles used: "CartoDB Positron", "Stamen Terrain"
-DEM: dem_90m.tif shaded relief added via LightSource.
+Tile Sources Used:
+
+"CartoDB Positron": minimalist
+
+"Stamen Terrain": elevation + relief
+
+DEM: 90m resolution from SRTM, shaded with LightSource
 
 📚 References & Acknowledgments
-This project builds upon publicly available academic work:
+This solo project was inspired and powered by several key open datasets and academic publications:
 
 Walker et al. (2023): Predicting Amazonian Sites with ML
 
 Iriarte et al. (2020): Geometry by Design
 
-Peripato et al. (2023): 10,000 Pre-Columbian Earthworks
+Peripato et al. (2023): 10,000 Earthworks
 
-Khan et al. (2017): Lidar & UAV Mapping in the Amazon
+Khan et al. (2017): Lidar UAV Mapping
 
-OpenLandMap Soil Database
+Remote Sensing & Geodata:
 
-WorldClim Bioclimatic Variables
+🌍 WorldClim Bioclimatic Variables
 
-HydroSHEDS River Network
+🌱 OpenLandMap Soil Database
 
-OpenTopography SRTM
+🌊 HydroSHEDS River Network
 
-🔍 Final Takeaways
-This solo project demonstrates how:
+🛰️ OpenTopography SRTM
 
-Remote sensing + open data
+🔍 Final Thoughts
+This solo project demonstrates that:
 
-Machine learning + historical context
+📡 Remote sensing + Open Earth data
 
-Geospatial tools + AI models (GPT)
+🧠 Machine learning + Text interpretation
 
-...can collectively guide real-world archaeological discovery.
+🌎 Spatial tools + Historical archives
 
-🧠 Future extensions:
-
-Apply CNNs to Sentinel-2 surface textures
-
-Extract trails using slope + canopy dips
-
-Partner with local archaeologists to validate predictions
+...can collectively uncover the past — and perhaps inspire future archaeological discovery.
